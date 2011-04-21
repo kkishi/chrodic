@@ -36,7 +36,7 @@ with (translation_box.style) {
 document.body.appendChild(translation_box);
 
 document.addEventListener('click', function(event) {
-  if (event.ctrlKey) {
+  if (event.metaKey) {
     translation_box.style.display =
         translation_box.style.display == 'block' ? 'none' : 'block';
   }
@@ -70,7 +70,7 @@ document.addEventListener('mousemove', function(event) {
           }
           translation_box.innerHTML +=
           ('<span style="font-size:14px">' + w + '</span>\n' + translation).
-            replace('\n', '<br />');
+            replace(/\n/g, '<br />');
         }
       });
   }
