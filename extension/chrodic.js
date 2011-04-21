@@ -65,17 +65,44 @@ document.addEventListener('click', function(event) {
 }, false);
 
 var REWRITE_RULES = [
-  [/s$/, ''],
-  [/es$/, 'e'],
-  [/es$/, ''],
-  [/ies$/, 'y'],
-  [/ing$/, ''],
-  [/ing$/, 'e'],
-  [/ed$/, 'e'],
-  [/ed$/, ''],
-  [/(.)$1ing$/, ''],
-  [/ied$/, 'y']
+  [/s$/, ''],  // Plural (cats -> cat)
+  [/ies$/, 'y'],  // Plural (categories -> category)
+  [/ing$/, ''],  // Present participle (doing -> do)
+  [/ing$/, 'e'],  // Present participle (rating -> rate)
+  [/(.)\1ing$/, '$1'], // Present participle (getting -> get)
+  [/ed$/, 'e'],  // Past participle (rated -> rate)
+  [/ed$/, ''],  // Past participle (started -> start)
+  [/(.)\1ed$/, '$1'],  // Past participle (submitted -> submit)
+  [/ied$/, 'y']  // Past participle (fried -> fry)
 ];
+
+// Test REWRITE_RULES
+(function() {
+   function expand(word) {
+     return REWRITE_RULES.map(function(r) { return word.replace(r[0], r[1]); }).
+       filter(function(s) { return s != word; });
+   }
+   [
+     'categories|category',
+     'cats|cat',
+     'derived|derive',
+     'dogged|dog',
+     'doing|do',
+     'fried|fry',
+     'getting|get',
+     'giving|give',
+     'rated|rate',
+     'rating|rate',
+     'saved|save',
+     'started|start',
+     'submitted|submit',
+     'writes|write'
+   ].map(function(w) { return w.split('|'); }).forEach(function(word) {
+     var expanded = expand(word[0]);
+     var found = expanded.some(function(e) { return e == word[1]; });
+     //console.log(found, word[0], expanded);
+   });
+})();
 
 function translate(word) {
   chrome.extension.sendRequest(
@@ -113,11 +140,11 @@ document.addEventListener('mousemove', function(event) {
 
   //if (translation_box.style.display == 'none') return;
   translate(word);
-  for (var i = 0; i < REWRITE_RULES.length; ++i) {
-    if (REWRITE_RULES[i][0].test(word)) {
-      translate(word.replace(REWRITE_RULES[i][0], REWRITE_RULES[i][1]));
+  REWRITE_RULES.forEach(function(r) {
+    if (r[0].test(word)) {
+      translate(word.replace(r[0], r[1]));
     }
-  }
+  });
 
   for (var i = 2; i <= 5; ++i) { 
     var new_word = getWord(event, i);
