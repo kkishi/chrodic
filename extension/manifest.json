@@ -1,6 +1,6 @@
 {
   "name" : "chrodic",
-  "version" : "0.1",
+  "version" : "0.11",
   "description" : "A mouseover dictionary implementation",
   "homepage_url" : "http://d.hatena.ne.jp/kkishi/",
   "permissions" : [
@@ -13,5 +13,8 @@
       "all_frames" : true
     }
   ],
-  "background_page" : "background.html"
+  "background" : {
+    "scripts": ["background.js"]
+  },
+  "manifest_version" : 2
 }

@@ -57,11 +57,12 @@ with (translation_box.style) {
 }
 document.body.appendChild(translation_box);
 
+document.addEventListener('dblclick', function(event) {
+  translation_box.style.display = 'block';
+}, false);
+
 document.addEventListener('click', function(event) {
-  if (event.shiftKey) {
-    translation_box.style.display =
-        translation_box.style.display == 'block' ? 'none' : 'block';
-  }
+  translation_box.style.display = 'none';
 }, false);
 
 var REWRITE_RULES = [
@@ -105,11 +106,12 @@ var REWRITE_RULES = [
 })();
 
 function translate(word) {
-  chrome.extension.sendRequest(
+  chrome.runtime.sendMessage(
     {'action' : 'translateWord', 'word' : word},
     function (translation) {
       var match = translation.match(/<→(.*)>/);
-      if (match) {
+      if (match &&  // Found a link to the canonical spelling.
+          word != match[1]) {  // Check if we don't do infinite loop.
         translate(match[1]);
 //        return;
       }
@@ -139,10 +141,12 @@ document.addEventListener('mousemove', function(event) {
   translation_box.innerHTML = '';
 
   //if (translation_box.style.display == 'none') return;
-  translate(word);
+
+  var words = [];
+  words.push(word);
   REWRITE_RULES.forEach(function(r) {
     if (r[0].test(word)) {
-      translate(word.replace(r[0], r[1]));
+      words.push(word.replace(r[0], r[1]));
     }
   });
 
@@ -150,6 +154,10 @@ document.addEventListener('mousemove', function(event) {
     var new_word = getWord(event, i);
     if (new_word == word) break;
     word = new_word;
-    translate(word);
+    words.push(word);
+  }
+
+  for (var i = words.length - 1; i >= 0; --i) {
+    translate(words[i]);
   }
 }, false);
