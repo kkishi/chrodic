@@ -57,11 +57,14 @@ with (translation_box.style) {
 }
 document.body.appendChild(translation_box);
 
+var mouseMoveEvent;
+
 var st;
 
 document.addEventListener('mousedown', function(event) {
   translation_box.style.display = 'none';
   st = setTimeout(function() {
+    redrawTranslationBox();
     translation_box.style.display = 'block';
   }, 500);
 }, false);
@@ -128,24 +131,23 @@ function translate(word) {
     });
 }
 
-document.addEventListener('mousemove', function(event) {
+function redrawTranslationBox() {
   // Redraw translation box.
   var box_width = Math.min(400, window.innerWidth);
-  var box_left = Math.min(window.innerWidth - box_width, event.clientX)
-    + event.pageX - event.clientX;
-  var box_top = event.pageY + 10;
+  var box_left =
+      Math.min(window.innerWidth - box_width, mouseMoveEvent.clientX)
+          + mouseMoveEvent.pageX - mouseMoveEvent.clientX;
+  var box_top = mouseMoveEvent.pageY + 10;
   with (translation_box.style) {
     width = box_width + 'px';
     left = box_left + 'px';
     top = box_top + 'px';
   }
 
-  var word = getWord(event, 1);
+  var word = getWord(mouseMoveEvent, 1);
   if (word == previous_word) return;
   previous_word = word;
   translation_box.innerHTML = '';
-
-  //if (translation_box.style.display == 'none') return;
 
   var words = [];
   words.push(word);
@@ -156,7 +158,7 @@ document.addEventListener('mousemove', function(event) {
   });
 
   for (var i = 2; i <= 5; ++i) { 
-    var new_word = getWord(event, i);
+    var new_word = getWord(mouseMoveEvent, i);
     if (new_word == word) break;
     word = new_word;
     words.push(word);
@@ -165,4 +167,10 @@ document.addEventListener('mousemove', function(event) {
   for (var i = words.length - 1; i >= 0; --i) {
     translate(words[i]);
   }
+}
+
+document.addEventListener('mousemove', function(event) {
+  mouseMoveEvent = event;
+  if (translation_box.style.display == 'none') return;
+  redrawTranslationBox();
 }, false);
