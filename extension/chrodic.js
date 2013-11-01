@@ -73,6 +73,10 @@ document.addEventListener('mouseup', function(event) {
   clearTimeout(st);
 });
 
+document.addEventListener('mousemove', function(event) {
+  clearTimeout(st);
+});
+
 var REWRITE_RULES = [
   [/s$/, ''],  // Plural (cats -> cat)
   [/ies$/, 'y'],  // Plural (categories -> category)
