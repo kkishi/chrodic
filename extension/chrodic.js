@@ -113,23 +113,52 @@ var REWRITE_RULES = [
    });
 })();
 
-function translate(word) {
-  chrome.runtime.sendMessage(
-    {'action' : 'translateWord', 'word' : word},
-    function (translation) {
-      var match = translation.match(/<→(.*)>/);
-      if (match &&  // Found a link to the canonical spelling.
-          word != match[1]) {  // Check if we don't do infinite loop.
-        translate(match[1]);
-//        return;
-      }
-      if (translation != '') {
-        translation_box.innerHTML +=
-        ('<span style="font-size:14px;">' + word + '</span>\n<div style="margin:5px;">' + translation + '</div>').
-            replace(/\n/g, '<br />');
-      }
-    });
+function translationTask(words) {
+  this.cancelled = false;
+  this.words = words;
+  this.remaining = 0;
+
+  if (translationTask.activeTask != null) {
+    translationTask.activeTask.cancel();
+    translationTask.activeTask = null;
+  }
+  translationTask.activeTask = this;
 }
+
+translationTask.prototype.cancel = function() {
+  this.cancelled = true;
+};
+
+translationTask.prototype.run = function() {
+  for (var i = 0; i < this.words.length; i++) {
+    this.translate(this.words[i]);
+  }
+};
+
+translationTask.prototype.translate = function(word) {
+  var self = this;
+  ++self.remaining;
+  chrome.runtime.sendMessage(
+      {'action' : 'translateWord', 'word' : word},
+      function (translation) {
+        if (self.cancelled) return;
+        var match = translation.match(/<→(.*)>/);
+        if (match &&  // Found a link to the canonical spelling.
+            word != match[1]) {  // Check if we don't do infinite loop.
+          self.translate(match[1]);
+//        return;
+        }
+        if (translation != '') {
+          translation_box.innerHTML +=
+          ('<span style="font-size:14px;">' + word + '</span>\n<div style="margin:5px;">' + translation + '</div>').
+              replace(/\n/g, '<br />');
+        }
+        --self.remaining;
+        if (self.remaining == 0) {
+          translationTask.activeTask = null;
+        }
+      });
+};
 
 function redrawTranslationBox() {
   // Redraw translation box.
@@ -164,9 +193,7 @@ function redrawTranslationBox() {
     words.push(word);
   }
 
-  for (var i = words.length - 1; i >= 0; --i) {
-    translate(words[i]);
-  }
+  (new translationTask(words)).run();
 }
 
 document.addEventListener('mousemove', function(event) {
