@@ -17,5 +17,6 @@
     "scripts": ["background.js"],
     "persistent": false
   },
+  "options_page" : "options.html",
   "manifest_version" : 2
 }
