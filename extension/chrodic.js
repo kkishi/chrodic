@@ -152,6 +152,7 @@ translationTask.prototype.translate = function(word) {
           translation_box.innerHTML +=
           ('<span style="font-size:14px;">' + word + '</span>\n<div style="margin:5px;">' + translation + '</div>').
               replace(/\n/g, '<br />');
+          adjustTranslationBoxLocation();
         }
         --self.remaining;
         if (self.remaining == 0) {
@@ -160,12 +161,12 @@ translationTask.prototype.translate = function(word) {
       });
 };
 
-function redrawTranslationBox() {
+function adjustTranslationBoxLocation() {
   // Redraw translation box.
   var box_width = Math.min(400, window.innerWidth);
   var box_left =
       Math.min(window.innerWidth - box_width, mouseMoveEvent.clientX)
-          + mouseMoveEvent.pageX - mouseMoveEvent.clientX;
+          + mouseMoveEvent.pageX - mouseMoveEvent.clientX + 2;
   var box_top = mouseMoveEvent.pageY + 10;
   with (translation_box.style) {
     width = box_width + 'px';
@@ -173,6 +174,18 @@ function redrawTranslationBox() {
     top = box_top + 'px';
   }
 
+  // Adjust when bottom of the translation box is out of the window.
+  var bcr = translation_box.getBoundingClientRect();
+  with (translation_box.style) {
+    if (bcr.height >= window.innerHeight) {
+      top = window.pageYOffset + 'px';
+    } else if (bcr.bottom > window.innerHeight) {
+      top = (window.pageYOffset + window.innerHeight - bcr.height) + 'px';
+    }
+  }
+}
+
+function redrawTranslationBox() {
   var word = getWord(mouseMoveEvent, 1);
   if (word == previous_word) return;
   previous_word = word;
@@ -198,6 +211,7 @@ function redrawTranslationBox() {
 
 document.addEventListener('mousemove', function(event) {
   mouseMoveEvent = event;
+  adjustTranslationBoxLocation();
   if (translation_box.style.display == 'none') return;
   redrawTranslationBox();
 }, false);
