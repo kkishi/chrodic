@@ -57,13 +57,18 @@ with (translation_box.style) {
 }
 document.body.appendChild(translation_box);
 
-document.addEventListener('dblclick', function(event) {
-  translation_box.style.display = 'block';
+var st;
+
+document.addEventListener('mousedown', function(event) {
+  translation_box.style.display = 'none';
+  st = setTimeout(function() {
+    translation_box.style.display = 'block';
+  }, 500);
 }, false);
 
-document.addEventListener('click', function(event) {
-  translation_box.style.display = 'none';
-}, false);
+document.addEventListener('mouseup', function(event) {
+  clearTimeout(st);
+});
 
 var REWRITE_RULES = [
   [/s$/, ''],  // Plural (cats -> cat)
