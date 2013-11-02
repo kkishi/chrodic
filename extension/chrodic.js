@@ -1,7 +1,10 @@
 console.log('chrodic loaded!');
 
-function getWord(event, n) {
-  var range = document.caretRangeFromPoint(event.clientX, event.clientY);
+var mouseMoveEvent;
+
+function getWord(n) {
+  var range = document.caretRangeFromPoint(
+    mouseMoveEvent.clientX, mouseMoveEvent.clientY);
   if (!range.startContainer.nodeValue) return '';
   // Expand left.
   while (range.startOffset > 0) {
@@ -56,8 +59,6 @@ with (translation_box.style) {
   display = 'none';
 }
 document.body.appendChild(translation_box);
-
-var mouseMoveEvent;
 
 var st;
 
@@ -190,25 +191,23 @@ function adjustTranslationBoxLocation() {
 }
 
 function redrawTranslationBox() {
-  var word = getWord(mouseMoveEvent, 1);
+  var word = getWord(1);
   if (word == previous_word) return;
   previous_word = word;
   translation_box.innerHTML = '';
 
   var words = [];
-  words.push(word);
+  for (var i = 5; i >= 1; --i) {
+    var w = getWord(i);
+    if (words.length == 0 || words[words.length - 1] != w) {
+      words.push(w);
+    }
+  }
   REWRITE_RULES.forEach(function(r) {
     if (r[0].test(word)) {
       words.push(word.replace(r[0], r[1]));
     }
   });
-
-  for (var i = 2; i <= 5; ++i) { 
-    var new_word = getWord(mouseMoveEvent, i);
-    if (new_word == word) break;
-    word = new_word;
-    words.push(word);
-  }
 
   (new translationTask(words)).run();
 }
