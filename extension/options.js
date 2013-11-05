@@ -49,7 +49,7 @@ var words = [];
 function addWord(key, value) {
   words.push({
     "key": key,
-    "value": value,
+    "value": value
   });
 
   if (words.length < 10000) {
@@ -67,7 +67,7 @@ function addWord(key, value) {
 
   trans.oncomplete = function(e) {
     console.log("transaction complete");
-  }
+  };
 
   words = [];
 };
@@ -93,15 +93,19 @@ function processKeyValue(kv) {
 
 function loadFile(file) {
 
-  function getKeyValue(buf) {
-    var m = buf.match(/■([^{]+)(?:  {(.+)})? : (.+)/);
-    return { key: m[1], kind: m[2], value: m[3] }
+  function parseLine(line) {
+    var m =line.match(/■([^{]+)(?:  {(.+)})? : (.+)/);
+    if (m == null) {
+      console.log('Failed to parse line: ', line);
+      return;
+    }
+    processKeyValue({ key: m[1], kind: m[2], value: m[3] });
   }
 
-  function parseLine(e) {
+  function parseLines(e) {
     var lines = e.target.result.split('\n');
     for (var i = 0; i < lines.length; ++i) {
-      processKeyValue(getKeyValue(lines[i]));
+      parseLine(lines[i]);
     }
   }
 
@@ -117,7 +121,7 @@ function loadFile(file) {
     }
     buffers.push(view.subarray(0, end));
     var f = new FileReader();
-    f.onload = parseLine
+    f.onload = parseLines;
     f.readAsText(new Blob(buffers));
     buffers = [];
     if (end + 1 <= view.length - 1) {
@@ -134,7 +138,7 @@ function loadFile(file) {
       return;
     }
 
-    var percentage = Math.round(current / file.size * 100) + "%"
+    var percentage = Math.round(current / file.size * 100) + "%";
     console.log(current + " / " + file.size + " (" + percentage + ")");
 
     var reader = new FileReader();
