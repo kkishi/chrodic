@@ -11,6 +11,10 @@ function deleteDatabase() {
     request.onerror = function(e) {
       console.log('delete error', e);
     };
+
+    request.onblocked = function(e) {
+      console.log('delete blocked', e);
+    };
 }
 
 function openDatabase() {
@@ -41,6 +45,10 @@ function openDatabase() {
 
   request.onerror = function(e) {
     console.log('open error', e);
+  };
+
+  request.onblocked = function(e) {
+    console.log('open blocked', e);
   };
 };
 

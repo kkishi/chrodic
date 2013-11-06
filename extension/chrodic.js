@@ -146,6 +146,7 @@ translationTask.prototype.translate = function(word) {
   chrome.runtime.sendMessage(
       {'action' : 'translateWord', 'word' : word},
       function (translation) {
+        if (translation == null) return;
         if (self.cancelled) return;
         var match = translation.match(/<→(.*)>/);
         if (match &&  // Found a link to the canonical spelling.
