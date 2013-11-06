@@ -1,14 +1,25 @@
 var pending = [];
-
-// Open DB.
 var db;
-indexedDB.open("dict", 1).onsuccess = function(e) {
-  db = e.target.result;
-  for (var i = 0; i < pending.length; ++i) {
-    pending[i]();
+
+function openDatabase() {
+  console.log('openDatabase');
+  indexedDB.open("dict", 1).onsuccess = function(e) {
+    db = e.target.result;
+    for (var i = 0; i < pending.length; ++i) {
+      pending[i]();
+    }
+    pending = [];
+  };
+}
+
+function closeDatabase() {
+  console.log('closeDatabase');
+  if (db == null) {
+    return;
   }
-  pending = [];
-};
+  db.close();
+  db = null;
+}
 
 function respond(word, callback) {
   // Lookup the requested word from DB.
@@ -24,13 +35,27 @@ function respond(word, callback) {
 }
 
 function onMessage(request, sender, callback) {
-  if (request.action != 'translateWord') return false;
-  if (db == null) {
-    pending.push(function() { respond(request.word, callback); });
-  } else {
-    respond(request.word, callback);
+  switch (request.action) {
+  case 'translateWord':
+    if (db == null) {
+      pending.push(function() { respond(request.word, callback); });
+    } else {
+      respond(request.word, callback);
+    }
+    return true;
+  case 'beginDatabaseUpdate':
+    closeDatabase();
+    callback();
+    break;
+  case 'endDatabaseUpdate':
+    openDatabase();
+    callback();
+    break;
   }
-  return true;
+  return false;
 }
 
 chrome.runtime.onMessage.addListener(onMessage);
+
+// Open DB.
+openDatabase();

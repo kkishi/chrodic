@@ -54,13 +54,12 @@ function openDatabase() {
 
 var words = [];
 
-function addWord(key, value) {
-  words.push({
-    "key": key,
-    "value": value
-  });
+function addWord(key, value, last) {
+  words.push({ "key": key, "value": value });
 
-  if (words.length < 10000) {
+  // Don't commit if it's not a last word and pending words are less than
+  // 10000.
+  if (!last && words.length < 10000) {
     return;
   }
 
@@ -75,6 +74,14 @@ function addWord(key, value) {
 
   trans.oncomplete = function(e) {
     console.log("transaction complete");
+    if (last) {
+      // Notify background.js that it can re-open db.
+      chrome.runtime.sendMessage(
+        {'action' : 'endDatabaseUpdate'},
+        function () {
+          console.log('Done!');
+        });
+    }
   };
 
   words = [];
@@ -82,15 +89,11 @@ function addWord(key, value) {
 
 var key = '';
 var value = '';
-var inserted = 0;
 
 function processKeyValue(kv) {
   if (key != kv.key) {
     if (key != '') {
-      addWord(key, value);
-      if (++inserted % 10000 == 0) {
-        console.log("Inserted", inserted, "words.");
-      }
+      addWord(key, value, false);
     }
     key = kv.key;
     value = (kv.kind ? kv.kind + kv.value : kv.value);
@@ -129,28 +132,33 @@ function loadFile(file) {
     }
     buffers.push(view.subarray(0, end));
     var f = new FileReader();
-    f.onload = parseLines;
+    f.addEventListener('load', parseLines);
     f.readAsText(new Blob(buffers));
     buffers = [];
     if (end + 1 <= view.length - 1) {
       buffers.push(view.subarray(end + 1, view.length));
     }
-    readLoop();
+    if (current < file.size) {
+      // Read the next chunk.
+      readLoop();
+    } else {
+      // This is the last chunk. Add a callback which does random cleanup
+      // stuff.
+      f.addEventListener('load', function() {
+        // Add the pending key value pair.
+        addWord(key, value, true);
+      });
+    }
   }
 
   var chunk = 1024 * 512;
   var current = 0;
   function readLoop() {
-    if (current >= file.size) {
-      addWord(key, value);
-      return;
-    }
-
     var percentage = Math.round(current / file.size * 100) + "%";
     console.log(current + " / " + file.size + " (" + percentage + ")");
 
     var reader = new FileReader();
-    reader.onload = read;
+    reader.addEventListener('load', read);
     reader.readAsArrayBuffer(file.slice(current,
                       Math.min(file.size, current + chunk)));
     current += chunk;
@@ -162,16 +170,24 @@ document.querySelector('#myfile').onchange = function(e) {
   if (this.files.length != 1) return;
   var file = this.files[0];
 
-  deleteDatabase();
-  openDatabase();
+  // First, notify background.js that we are going to manipulate db so it
+  // should close currently opened db.
+  chrome.runtime.sendMessage(
+    {'action' : 'beginDatabaseUpdate'},
+    function () {
+      // Now we can manipulate db. Recreate a new db.
+      deleteDatabase();
+      openDatabase();
 
-  var st = setInterval(function() {
-    if (db == null) {
-      console.log('DB not initialized.');
-      return;
-    }
-    console.log('DB initialized.');
-    clearInterval(st);
-    loadFile(file);
-   }, 1000);
+      // Poll until db becomes available.
+      var st = setInterval(function() {
+        if (db == null) {
+          console.log('DB not initialized.');
+          return;
+        }
+        console.log('DB initialized.');
+        clearInterval(st);
+        loadFile(file);
+      }, 1000);
+    });
 };
