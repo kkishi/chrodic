@@ -57,6 +57,7 @@ with (translation_box.style) {
   opacity = '0.75';
   textAlign = 'left';
   display = 'none';
+  borderRadius = '5px';
 }
 document.body.appendChild(translation_box);
 
