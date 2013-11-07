@@ -54,34 +54,32 @@ with (translation_box.style) {
   background = '#000000';
   color = '#ffffff';
   fontSize = '10px';
-  opacity = '0.75';
+  opacity = '0';
   textAlign = 'left';
-  display = 'none';
+  display = 'block';
   borderRadius = '5px';
 }
 document.body.appendChild(translation_box);
 
-var st;
+var fadeinSt;
 
-document.addEventListener('mousedown', function(event) {
-  translation_box.style.display = 'none';
-  st = setTimeout(function() {
-    redrawTranslationBox();
-    translation_box.style.display = 'block';
-  }, 500);
-}, false);
-
-document.addEventListener('mouseup', function(event) {
-  clearTimeout(st);
-});
-
-document.addEventListener('mousemove', function(event) {
-  clearTimeout(st);
-});
+function fadein() {
+  clearInterval(fadeinSt);
+  var opacity = 0;
+  fadeinSt = setInterval(function() {
+    translation_box.style.opacity = opacity / 100;
+    if (opacity == 75) {
+      clearInterval(fadeinSt);
+    } else {
+      opacity += 5;
+    }
+  }, 10);
+}
 
 var REWRITE_RULES = [
   [/s$/, ''],  // Plural (cats -> cat)
   [/ies$/, 'y'],  // Plural (categories -> category)
+  [/es$/, ''],  // Plural (fixes -> fix)
   [/ing$/, ''],  // Present participle (doing -> do)
   [/ing$/, 'e'],  // Present participle (rating -> rate)
   [/(.)\1ing$/, '$1'], // Present participle (getting -> get)
@@ -103,6 +101,7 @@ var REWRITE_RULES = [
      'derived|derive',
      'dogged|dog',
      'doing|do',
+     'fixes|fix',
      'fried|fry',
      'getting|get',
      'giving|give',
@@ -147,23 +146,25 @@ translationTask.prototype.translate = function(word) {
   chrome.runtime.sendMessage(
       {'action' : 'translateWord', 'word' : word},
       function (translation) {
-        if (translation == null) return;
         if (self.cancelled) return;
-        var match = translation.match(/<→(.*)>/);
-        if (match &&  // Found a link to the canonical spelling.
-            word != match[1]) {  // Check if we don't do infinite loop.
-          self.translate(match[1]);
-//        return;
-        }
-        if (translation != '') {
-          translation_box.innerHTML +=
-          ('<span style="font-size:14px;">' + word + '</span>\n<div style="margin:5px;">' + translation + '</div>').
-              replace(/\n/g, '<br />');
-          adjustTranslationBoxLocation();
+        if (translation != null) {
+          var match = translation.match(/<→(.*)>/);
+          if (match &&  // Found a link to the canonical spelling.
+              word != match[1]) {  // Check if we don't do infinite loop.
+            self.translate(match[1]);
+  //        return;
+          }
+          if (translation != '') {
+            translation_box.innerHTML +=
+            ('<span style="font-size:14px;">' + word + '</span>\n<div style="margin:5px;">' + translation + '</div>').
+                replace(/\n/g, '<br />');
+            adjustTranslationBoxLocation();
+          }
         }
         --self.remaining;
         if (self.remaining == 0) {
           translationTask.activeTask = null;
+          fadein();
         }
       });
 };
@@ -196,7 +197,6 @@ function redrawTranslationBox() {
   var word = getWord(1);
   if (word == previous_word) return;
   previous_word = word;
-  translation_box.innerHTML = '';
 
   var words = [];
   for (var i = 5; i >= 1; --i) {
@@ -214,9 +214,38 @@ function redrawTranslationBox() {
   (new translationTask(words)).run();
 }
 
+var lastScrollTimeStamp = 0;
+
+document.addEventListener('scroll', function(event) {
+  // Clear translation box.
+  translation_box.innerHTML = '';
+  translation_box.style.opacity = '0';
+
+  // Record the timestamp for the later check in mousemove handler.
+  lastScrollTimeStamp = event.timeStamp;
+}, false);
+
+var st;
+
 document.addEventListener('mousemove', function(event) {
+  // Store event to obtain mouse location.
   mouseMoveEvent = event;
-  adjustTranslationBoxLocation();
-  if (translation_box.style.display == 'none') return;
-  redrawTranslationBox();
+
+  // Clear translation box.
+  translation_box.innerHTML = '';
+  translation_box.style.opacity = '0';
+
+  // Chrome triggers mousemove event on scroll. If it's close to the last
+  // scroll event, probably it's not a pure mouse move.
+  if (event.timeStamp - lastScrollTimeStamp < 200) {
+    return;
+  }
+
+  // Redraw translation box if mouse stays hovering on a same location for a
+  // certain amount of time.
+  clearTimeout(st);
+  st = setTimeout(function() {
+    adjustTranslationBoxLocation();
+    redrawTranslationBox();
+  }, 200);
 }, false);
