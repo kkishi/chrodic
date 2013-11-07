@@ -1,5 +1,6 @@
 console.log('chrodic loaded!');
 
+var enabled = false;
 var mouseMoveEvent;
 
 function getWord(n) {
@@ -70,6 +71,22 @@ function fadein() {
       clearInterval(fadeinSt);
     } else {
       opacity += 5;
+    }
+  }, 10);
+}
+
+var fadeoutSt;
+
+function fadeout() {
+  clearInterval(fadeoutSt);
+  var opacity = 75;
+  fadeoutSt = setInterval(function() {
+    translation_box.style.opacity = opacity / 100;
+    if (opacity == 0) {
+      translation_box.innerHTML = '';
+      clearInterval(fadeoutSt);
+    } else {
+      opacity -= 5;
     }
   }, 10);
 }
@@ -212,9 +229,10 @@ function redrawTranslationBox() {
 var lastScrollTimeStamp = 0;
 
 document.addEventListener('scroll', function(event) {
+  if (!enabled) return;
+
   // Clear translation box.
-  translation_box.innerHTML = '';
-  translation_box.style.opacity = '0';
+  fadeout();
 
   // Record the timestamp for the later check in mousemove handler.
   lastScrollTimeStamp = event.timeStamp;
@@ -222,13 +240,20 @@ document.addEventListener('scroll', function(event) {
 
 var st;
 
+var previousWord = '';
+
 document.addEventListener('mousemove', function(event) {
   // Store event to obtain mouse location.
   mouseMoveEvent = event;
 
+  if (!enabled) return;
+
+  var word = getWord(1);
+  if (word == previousWord) return;
+  previousWord = word;
+
   // Clear translation box.
-  translation_box.innerHTML = '';
-  translation_box.style.opacity = '0';
+  fadeout();
 
   // Chrome triggers mousemove event on scroll. If it's close to the last
   // scroll event, probably it's not a pure mouse move.
@@ -246,10 +271,30 @@ document.addEventListener('mousemove', function(event) {
 }, false);
 
 document.addEventListener('mouseleave', function(event) {
+  if (!enabled) return;
+
   // Clear translation box.
-  translation_box.innerHTML = '';
-  translation_box.style.opacity = '0';
+  fadeout();
 
   // Cancel ongoing translation box updates.
   clearTimeout(st);
+});
+
+var enableTimeout;
+
+document.addEventListener('mousedown', function(event) {
+  if (enabled) {
+    enabled = false;
+    fadeout();
+  } else {
+    enableTimeout = setTimeout(function() {
+      enabled = true;
+      adjustTranslationBoxLocation();
+      redrawTranslationBox();
+    }, 500);
+  }
+});
+
+document.addEventListener('mouseup', function(event) {
+  clearInterval(enableTimeout);
 });
