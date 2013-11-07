@@ -246,6 +246,9 @@ document.addEventListener('mousemove', function(event) {
   // Store event to obtain mouse location.
   mouseMoveEvent = event;
 
+  // Mousemove cancels enabling chrodic.
+  clearTimeout(enableTimeout);
+
   if (!enabled) return;
 
   var word = getWord(1);
