@@ -45,8 +45,6 @@ function getWord(n) {
   return range.toString().toLowerCase();
 }
 
-var previous_word = '';
-
 var translation_box = document.createElement('div');
 with (translation_box.style) {
   zIndex = 2147483647;
@@ -194,10 +192,6 @@ function adjustTranslationBoxLocation() {
 }
 
 function redrawTranslationBox() {
-  var word = getWord(1);
-  if (word == previous_word) return;
-  previous_word = word;
-
   var words = [];
   for (var i = 5; i >= 1; --i) {
     var w = getWord(i);
@@ -205,6 +199,7 @@ function redrawTranslationBox() {
       words.push(w);
     }
   }
+  var word = getWord(1);
   REWRITE_RULES.forEach(function(r) {
     if (r[0].test(word)) {
       words.push(word.replace(r[0], r[1]));
