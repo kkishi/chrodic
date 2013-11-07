@@ -244,3 +244,12 @@ document.addEventListener('mousemove', function(event) {
     redrawTranslationBox();
   }, 200);
 }, false);
+
+document.addEventListener('mouseleave', function(event) {
+  // Clear translation box.
+  translation_box.innerHTML = '';
+  translation_box.style.opacity = '0';
+
+  // Cancel ongoing translation box updates.
+  clearTimeout(st);
+});
