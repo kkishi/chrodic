@@ -174,6 +174,11 @@ document.addEventListener('mousedown', function(event) {
     translationBox.Fadeout();
   } else {
     enableTimeout = setTimeout(function() {
+      if (event.pageX != mouseMoveEvent.pageX ||
+          event.pageY != mouseMoveEvent.pageY) {
+        // Only triggers when mouse stays on the same location.
+        return;
+      }
       enabled = true;
       redrawTranslationBox();
     }, 500);
