@@ -188,3 +188,9 @@ document.addEventListener('mousedown', function(event) {
 document.addEventListener('mouseup', function(event) {
   clearInterval(enableTimeout);
 });
+
+document.addEventListener('keydown', function(event) {
+  if (event.keyIdentifier == 'Enter') {
+    console.log(translationBox.GetContent());
+  }
+});

@@ -3,7 +3,7 @@ function TranslationTask(words, translationBox) {
   this.words = words;
   this.remaining = 0;
   this.translationBox = translationBox;
-  this.translation = "";
+  this.translations = [];
 
   if (TranslationTask.activeTask != null) {
     TranslationTask.activeTask.cancel();
@@ -18,12 +18,13 @@ TranslationTask.prototype.cancel = function() {
 
 TranslationTask.prototype.run = function() {
   for (var i = 0; i < this.words.length; i++) {
-    this.translate(this.words[i]);
+    this.translate(i);
   }
 };
 
-TranslationTask.prototype.translate = function(word) {
+TranslationTask.prototype.translate = function(i) {
   var self = this;
+  var word = self.words[i];
   ++self.remaining;
   chrome.runtime.sendMessage(
       {'action' : 'translateWord', 'word' : word},
@@ -36,18 +37,22 @@ TranslationTask.prototype.translate = function(word) {
             self.translate(match[1]);
   //        return;
           }
-          if (translation != '') {
-            self.translation +=
-            ('<span style="font-size:14px;">' + word +
-             '</span>\n<div style="margin:5px;">' + translation + '</div>').
-                replace(/\n/g, '<br />');
-          }
+          self.translations[i] = translation;
         }
         --self.remaining;
         if (self.remaining == 0) {
           TranslationTask.activeTask = null;
 
-          self.translationBox.SetContent(self.translation);
+          // Pass non-empty word/translation pairs.
+          var words = [];
+          var translations = [];
+          for (var j = 0; j < self.words.length; ++j) {
+            if (self.translations[j] != undefined) {
+              words.push(self.words[j]);
+              translations.push(self.translations[j]);
+            }
+          }
+          self.translationBox.SetContent(words, translations);
           self.translationBox.AdjustLocation();
           self.translationBox.Fadein();
         }

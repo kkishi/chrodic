@@ -45,8 +45,23 @@ TranslationBox.prototype.Fadeout = function() {
   }, 10);
 };
 
-TranslationBox.prototype.SetContent = function(content) {
+TranslationBox.prototype.SetContent = function(words, translations) {
+  // Store just for later retrieves by GetContent.
+  this.words = words;
+  this.translations = translations;
+
+  var content = "";
+  for (var i = 0; i < words.length; ++i) {
+    content +=
+    ('<span style="font-size:14px;">' + words[i] +
+     '</span>\n<div style="margin:5px;">' + translations[i] + '</div>').
+      replace(/\n/g, '<br />');
+  }
   this.div.innerHTML = content;
+};
+
+TranslationBox.prototype.GetContent = function() {
+  return [this.words, this.translations];
 };
 
 TranslationBox.prototype.SetLocation = function(mouse) {
