@@ -46,51 +46,6 @@ function getWord(n) {
   return range.toString().toLowerCase();
 }
 
-var translation_box = document.createElement('div');
-with (translation_box.style) {
-  zIndex = 2147483647;
-  position = 'absolute';
-  background = '#000000';
-  color = '#ffffff';
-  fontSize = '10px';
-  opacity = '0';
-  textAlign = 'left';
-  display = 'block';
-  borderRadius = '5px';
-}
-document.body.appendChild(translation_box);
-
-var fadeinSt;
-
-function fadein() {
-  clearInterval(fadeinSt);
-  var opacity = 0;
-  fadeinSt = setInterval(function() {
-    translation_box.style.opacity = opacity / 100;
-    if (opacity == 75) {
-      clearInterval(fadeinSt);
-    } else {
-      opacity += 5;
-    }
-  }, 10);
-}
-
-var fadeoutSt;
-
-function fadeout() {
-  clearInterval(fadeoutSt);
-  var opacity = 75;
-  fadeoutSt = setInterval(function() {
-    translation_box.style.opacity = opacity / 100;
-    if (opacity == 0) {
-      translation_box.innerHTML = '';
-      clearInterval(fadeoutSt);
-    } else {
-      opacity -= 5;
-    }
-  }, 10);
-}
-
 var REWRITE_RULES = [
   [/s$/, ''],  // Plural (cats -> cat)
   [/ies$/, 'y'],  // Plural (categories -> category)
@@ -133,80 +88,7 @@ var REWRITE_RULES = [
    });
 })();
 
-function translationTask(words) {
-  this.cancelled = false;
-  this.words = words;
-  this.remaining = 0;
-
-  if (translationTask.activeTask != null) {
-    translationTask.activeTask.cancel();
-    translationTask.activeTask = null;
-  }
-  translationTask.activeTask = this;
-}
-
-translationTask.prototype.cancel = function() {
-  this.cancelled = true;
-};
-
-translationTask.prototype.run = function() {
-  for (var i = 0; i < this.words.length; i++) {
-    this.translate(this.words[i]);
-  }
-};
-
-translationTask.prototype.translate = function(word) {
-  var self = this;
-  ++self.remaining;
-  chrome.runtime.sendMessage(
-      {'action' : 'translateWord', 'word' : word},
-      function (translation) {
-        if (self.cancelled) return;
-        if (translation != null) {
-          var match = translation.match(/<→(.*)>/);
-          if (match &&  // Found a link to the canonical spelling.
-              word != match[1]) {  // Check if we don't do infinite loop.
-            self.translate(match[1]);
-  //        return;
-          }
-          if (translation != '') {
-            translation_box.innerHTML +=
-            ('<span style="font-size:14px;">' + word + '</span>\n<div style="margin:5px;">' + translation + '</div>').
-                replace(/\n/g, '<br />');
-            adjustTranslationBoxLocation();
-          }
-        }
-        --self.remaining;
-        if (self.remaining == 0) {
-          translationTask.activeTask = null;
-          fadein();
-        }
-      });
-};
-
-function adjustTranslationBoxLocation() {
-  // Redraw translation box.
-  var box_width = Math.min(400, window.innerWidth);
-  var box_left =
-      Math.min(window.innerWidth - box_width, mouseMoveEvent.clientX)
-          + mouseMoveEvent.pageX - mouseMoveEvent.clientX + 2;
-  var box_top = mouseMoveEvent.pageY + 10;
-  with (translation_box.style) {
-    width = box_width + 'px';
-    left = box_left + 'px';
-    top = box_top + 'px';
-  }
-
-  // Adjust when bottom of the translation box is out of the window.
-  var bcr = translation_box.getBoundingClientRect();
-  with (translation_box.style) {
-    if (bcr.height >= window.innerHeight) {
-      top = window.pageYOffset + 'px';
-    } else if (bcr.bottom > window.innerHeight) {
-      top = (window.pageYOffset + window.innerHeight - bcr.height) + 'px';
-    }
-  }
-}
+var translationBox = new TranslationBox;
 
 function redrawTranslationBox() {
   var words = [];
@@ -223,8 +105,8 @@ function redrawTranslationBox() {
     }
   });
 
-  (new translationTask(words)).run();
-}
+  (new TranslationTask(words, translationBox)).run();
+};
 
 var lastScrollTimeStamp = 0;
 
@@ -232,7 +114,7 @@ document.addEventListener('scroll', function(event) {
   if (!enabled) return;
 
   // Clear translation box.
-  fadeout();
+  translationBox.Fadeout();
 
   // Record the timestamp for the later check in mousemove handler.
   lastScrollTimeStamp = event.timeStamp;
@@ -249,6 +131,8 @@ document.addEventListener('mousemove', function(event) {
   // Mousemove cancels enabling chrodic.
   clearTimeout(enableTimeout);
 
+  translationBox.SetLocation(mouseMoveEvent);
+
   if (!enabled) return;
 
   var word = getWord(1);
@@ -256,7 +140,7 @@ document.addEventListener('mousemove', function(event) {
   previousWord = word;
 
   // Clear translation box.
-  fadeout();
+  translationBox.Fadeout();
 
   // Chrome triggers mousemove event on scroll. If it's close to the last
   // scroll event, probably it's not a pure mouse move.
@@ -268,7 +152,6 @@ document.addEventListener('mousemove', function(event) {
   // certain amount of time.
   clearTimeout(st);
   st = setTimeout(function() {
-    adjustTranslationBoxLocation();
     redrawTranslationBox();
   }, 200);
 }, false);
@@ -277,7 +160,7 @@ document.addEventListener('mouseleave', function(event) {
   if (!enabled) return;
 
   // Clear translation box.
-  fadeout();
+  translationBox.Fadeout();
 
   // Cancel ongoing translation box updates.
   clearTimeout(st);
@@ -288,11 +171,10 @@ var enableTimeout;
 document.addEventListener('mousedown', function(event) {
   if (enabled) {
     enabled = false;
-    fadeout();
+    translationBox.Fadeout();
   } else {
     enableTimeout = setTimeout(function() {
       enabled = true;
-      adjustTranslationBoxLocation();
       redrawTranslationBox();
     }, 500);
   }

@@ -9,7 +9,7 @@
   "content_scripts" : [
     {
       "matches" : [ "http://*/*", "https://*/*" ],
-      "js" : [ "chrodic.js" ],
+      "js" : [ "translation_box.js", "translation_task.js", "chrodic.js" ],
       "all_frames" : true
     }
   ],
