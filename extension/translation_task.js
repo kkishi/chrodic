@@ -1,7 +1,7 @@
 function TranslationTask(words, translationBox) {
   this.cancelled = false;
   this.words = words;
-  this.remaining = 0;
+  this.finished = 0;
   this.translationBox = translationBox;
   this.translations = [];
 
@@ -25,7 +25,6 @@ TranslationTask.prototype.run = function() {
 TranslationTask.prototype.translate = function(i) {
   var self = this;
   var word = self.words[i];
-  ++self.remaining;
   chrome.runtime.sendMessage(
       {'action' : 'translateWord', 'word' : word},
       function (translation) {
@@ -34,13 +33,15 @@ TranslationTask.prototype.translate = function(i) {
           var match = translation.match(/<→(.*)>/);
           if (match &&  // Found a link to the canonical spelling.
               word != match[1]) {  // Check if we don't do infinite loop.
-            self.translate(match[1]);
+            var l = self.words.length;
+            self.words.push(match[1]);
+            self.translate(l);
   //        return;
           }
           self.translations[i] = translation;
         }
-        --self.remaining;
-        if (self.remaining == 0) {
+        ++self.finished;
+        if (self.finished == self.words.length) {
           TranslationTask.activeTask = null;
 
           // Pass non-empty word/translation pairs.
