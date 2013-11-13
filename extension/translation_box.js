@@ -33,7 +33,6 @@ TranslationBox.prototype.Fadeout = function() {
   var self = this;
   clearInterval(self.fadeoutSt);
   clearInterval(self.fadeinSt);
-  var opacity = 75;
   self.fadeoutSt = setInterval(function() {
     self.div.style.opacity = self.opacity / 100;
     if (self.opacity == 0) {
