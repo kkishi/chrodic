@@ -55,7 +55,9 @@ function openDatabase() {
 var words = [];
 
 function addWord(key, value, last) {
-  words.push({ "key": key, "value": value });
+  // TODO(keisuke): We can store some information to restore the original key
+  // string before it's converted to lower case, and use it presentation time.
+  words.push({ "key": key.toLowerCase(), "value": value });
 
   // Don't commit if it's not a last word and pending words are less than
   // 10000.
