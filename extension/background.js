@@ -24,13 +24,23 @@ function closeDatabase() {
 function respond(word, callback) {
   // Lookup the requested word from DB.
   var trans = db.transaction(["word"], "readonly");
-  trans.objectStore("word").openCursor(word).onsuccess = function(e) {
-    var result = e.target.result;
-    if (result) {
-      callback(result.value.value);
-    } else {
-      callback(null);
+  var index = trans.objectStore("word").index('key');
+  index.count(word).onsuccess = function(e) {
+    var count = e.target.result;
+    if (count == 0) {
+      callback([]);
+      return;
     }
+    var results = [];
+    index.openCursor(word).onsuccess = function(e) {
+      var cursor = e.target.result;
+      results.push(cursor.value);
+      if (results.length == count) {
+        callback(results);
+        return;
+      }
+      cursor.continue();
+    };
   };
 }
 

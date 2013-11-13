@@ -34,7 +34,8 @@ function openDatabase() {
       db.deleteObjectStore("word");
     }
 
-    db.createObjectStore("word", {keyPath: "key"});
+    var store = db.createObjectStore("word", {autoIncrement: true});
+    store.createIndex('key', 'key', {unique: false});
   };
 
   request.onsuccess = function(e) {
@@ -55,9 +56,12 @@ function openDatabase() {
 var words = [];
 
 function addWord(key, value, last) {
-  // TODO(keisuke): We can store some information to restore the original key
-  // string before it's converted to lower case, and use it presentation time.
-  words.push({ "key": key.toLowerCase(), "value": value });
+  var lowerKey = key.toLowerCase();
+  var entry = { "key": lowerKey, "value": value };
+  if (key != lowerKey) {
+    entry.originalKey = key;
+  }
+  words.push(entry);
 
   // Don't commit if it's not a last word and pending words are less than
   // 10000.

@@ -3,7 +3,7 @@ function TranslationTask(words, translationBox) {
   this.words = words;
   this.finished = 0;
   this.translationBox = translationBox;
-  this.translations = [];
+  this.results = [];
 
   if (TranslationTask.activeTask != null) {
     TranslationTask.activeTask.cancel();
@@ -27,10 +27,10 @@ TranslationTask.prototype.translate = function(i) {
   var word = self.words[i];
   chrome.runtime.sendMessage(
       {'action' : 'translateWord', 'word' : word},
-      function (translation) {
+      function (results) {
         if (self.cancelled) return;
-        if (translation != null) {
-          var match = translation.match(/<→(.*)>/);
+        for (var j = 0; j < results.length; ++j) {
+          var match = results[j].value.match(/<→(.*)>/);
           if (match &&  // Found a link to the canonical spelling.
               word != match[1]) {  // Check if we don't do infinite loop.
             var l = self.words.length;
@@ -38,22 +38,12 @@ TranslationTask.prototype.translate = function(i) {
             self.translate(l);
   //        return;
           }
-          self.translations[i] = translation;
         }
+        Array.prototype.push.apply(self.results, results);
         ++self.finished;
         if (self.finished == self.words.length) {
           TranslationTask.activeTask = null;
-
-          // Pass non-empty word/translation pairs.
-          var words = [];
-          var translations = [];
-          for (var j = 0; j < self.words.length; ++j) {
-            if (self.translations[j] != undefined) {
-              words.push(self.words[j]);
-              translations.push(self.translations[j]);
-            }
-          }
-          self.translationBox.SetContent(words, translations);
+          self.translationBox.SetContent(self.results);
           self.translationBox.AdjustLocation();
           self.translationBox.Fadein();
         }

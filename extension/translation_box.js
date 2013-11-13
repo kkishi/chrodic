@@ -44,23 +44,26 @@ TranslationBox.prototype.Fadeout = function() {
   }, 10);
 };
 
-TranslationBox.prototype.SetContent = function(words, translations) {
-  // Store just for later retrieves by GetContent.
-  this.words = words;
-  this.translations = translations;
+TranslationBox.prototype.SetContent = function(results) {
+  this.content = [];
+  for (var i = 0; i < results.length; ++i) {
+    var key = results[i].originalKey || results[i].key;
+    var value = results[i].value;
+    this.content.push({word: key, translation: value});
+  }
 
-  var content = "";
-  for (var i = 0; i < words.length; ++i) {
-    content +=
-    ('<span style="font-size:14px;">' + words[i] +
-     '</span>\n<div style="margin:5px;">' + translations[i] + '</div>').
+  this.div.innerHTML = "";
+  for (var i = 0; i < this.content.length; ++i) {
+    var c = this.content[i];
+    this.div.innerHTML +=
+    ('<span style="font-size:14px;">' + c.word +
+     '</span>\n<div style="margin:5px;">' + c.translation + '</div>').
       replace(/\n/g, '<br />');
   }
-  this.div.innerHTML = content;
 };
 
 TranslationBox.prototype.GetContent = function() {
-  return [this.words, this.translations];
+  return this.content;
 };
 
 TranslationBox.prototype.SetLocation = function(mouse) {

@@ -192,10 +192,9 @@ document.addEventListener('mouseup', function(event) {
 document.addEventListener('keydown', function(event) {
   if (event.keyIdentifier == 'Enter') {
     var content = translationBox.GetContent();
-    var words = content[0], translations = content[1];
-    for (var i = 0; i < words.length; ++i) {
-      console.log(words[i]);
-      console.log(translations[i]);
+    for (var i = 0; i < content.length; ++i) {
+      console.log(content[i].word);
+      console.log(content[i].translation);
     }
   }
 });
