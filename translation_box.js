@@ -6,11 +6,14 @@ function TranslationBox() {
     position = 'absolute';
     background = '#000000';
     color = '#ffffff';
-    fontSize = '10px';
+    fontFamily = 'Hiragino Mincho Pro';
+    fontSize = '11px';
     opacity = '0';
     textAlign = 'left';
     display = 'block';
     borderRadius = '5px';
+    lineHeight = '16px';
+    webkitFontSmoothing = 'auto';
   }
   document.body.appendChild(this.div);
 }
