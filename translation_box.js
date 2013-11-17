@@ -56,7 +56,7 @@ TranslationBox.prototype.SetContent = function(results) {
   for (var i = 0; i < this.content.length; ++i) {
     var c = this.content[i];
     this.div.innerHTML +=
-    ('<span style="font-size:14px;">' + c.word +
+    ('<span style="font-size:14px;">' + (i + 1) + '. ' + c.word +
      '</span>\n<div style="margin:5px;">' + c.translation + '</div>').
       replace(/\n/g, '<br />');
   }

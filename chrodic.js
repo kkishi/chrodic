@@ -190,11 +190,12 @@ document.addEventListener('mouseup', function(event) {
 });
 
 document.addEventListener('keydown', function(event) {
-  if (event.keyIdentifier == 'Enter') {
-    var content = translationBox.GetContent();
-    for (var i = 0; i < content.length; ++i) {
-      console.log(content[i].word);
-      console.log(content[i].translation);
-    }
-  }
+  var kc = event.keyCode;
+  // 49 == '1', 57 == '9'
+  if (kc < 49 || 57 < kc) return;
+  var content = translationBox.GetContent();
+  if (kc - 49 >= content.length) return;
+  chrome.runtime.sendMessage(
+    {action: 'addToAnki', entry: content[kc - 49]},
+    function() { console.log('Added to Anki.'); });
 });

@@ -21,6 +21,19 @@ function closeDatabase() {
   db = null;
 }
 
+function addToAnki(entry, callback) {
+  var ankiweb = 'http://ankiweb.net/edit/';
+  chrome.tabs.create({url: ankiweb, active: false}, function(tab) {
+    chrome.tabs.executeScript(tab.id, {file: 'ankiweb.js'}, function(result) {
+      chrome.tabs.sendMessage(tab.id, entry, function() {
+        chrome.tabs.remove(tab.id, function() {
+          callback();
+        });
+      });
+    });
+  });
+}
+
 function respond(word, callback) {
   // Lookup the requested word from DB.
   var trans = db.transaction(["word"], "readonly");
@@ -61,6 +74,9 @@ function onMessage(request, sender, callback) {
     openDatabase();
     callback();
     break;
+  case 'addToAnki':
+    addToAnki(request.entry, callback);
+    return true;
   }
   return false;
 }
