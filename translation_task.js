@@ -4,6 +4,7 @@ function TranslationTask(words, translationBox) {
   this.finished = 0;
   this.translationBox = translationBox;
   this.results = [];
+  this.seen = {};
 
   if (TranslationTask.activeTask != null) {
     TranslationTask.activeTask.cancel();
@@ -25,6 +26,7 @@ TranslationTask.prototype.run = function() {
 TranslationTask.prototype.translate = function(i) {
   var self = this;
   var word = self.words[i];
+  self.seen[word] = true;
   chrome.runtime.sendMessage(
       {'action' : 'translateWord', 'word' : word},
       function (results) {
@@ -32,7 +34,7 @@ TranslationTask.prototype.translate = function(i) {
         for (var j = 0; j < results.length; ++j) {
           var match = results[j].value.match(/<→(.*)>/);
           if (match &&  // Found a link to the canonical spelling.
-              word != match[1]) {  // Check if we don't do infinite loop.
+              !self.seen[match[1]]) {  // Check if we don't do infinite loop.
             var l = self.words.length;
             self.words.push(match[1]);
             self.translate(l);
