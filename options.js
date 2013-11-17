@@ -160,8 +160,9 @@ function loadFile(file) {
   var chunk = 1024 * 512;
   var current = 0;
   function readLoop() {
-    var percentage = Math.round(current / file.size * 100) + "%";
-    console.log(current + " / " + file.size + " (" + percentage + ")");
+    var percentage = Math.round(current / file.size * 100);
+    console.log(current + " / " + file.size + " (" + percentage + "%)");
+    updateProgressBar(percentage);
 
     var reader = new FileReader();
     reader.addEventListener('load', read);
@@ -197,3 +198,35 @@ document.querySelector('#myfile').onchange = function(e) {
       }, 1000);
     });
 };
+
+
+var fields = [{name: 'note_type', default: 'Basic'},
+              {name: 'deck', default: 'Default'}];
+window.addEventListener('load', function() {
+  fields.forEach(function(field) {
+    if (localStorage[field.name] == undefined) {
+      localStorage[field.name] = field.default;
+    }
+    var element = document.getElementById(field.name);
+    element.value = localStorage[field.name];
+    element.addEventListener('change', function(e) {
+      localStorage[field.name] = element.value;
+    });
+  });
+});
+
+function updateProgressBar(progress) {
+  var bar = Math.floor(progress) + '%' + '&nbsp;[';
+  for (var i = 0; i < 50; ++i) {
+    if ((i + 1) * 2 <= progress) {
+      bar += '=';
+    } else {
+      bar += '&nbsp;';
+    }
+  }
+  document.getElementById('progress').innerHTML = bar + ']';
+}
+
+window.addEventListener('load', function() {
+  updateProgressBar(0);
+});

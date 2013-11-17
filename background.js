@@ -23,9 +23,12 @@ function closeDatabase() {
 
 function addToAnki(entry, callback) {
   var ankiweb = 'http://ankiweb.net/edit/';
+  var message = {entry: entry,
+                 config: {noteType: localStorage['note_type'],
+                          deck: localStorage['deck']}};
   chrome.tabs.create({url: ankiweb, active: false}, function(tab) {
     chrome.tabs.executeScript(tab.id, {file: 'ankiweb.js'}, function(result) {
-      chrome.tabs.sendMessage(tab.id, entry, function() {
+      chrome.tabs.sendMessage(tab.id, message, function() {
         chrome.tabs.remove(tab.id, function() {
           callback();
         });
