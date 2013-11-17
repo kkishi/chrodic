@@ -12,7 +12,7 @@ function TranslationBox() {
     textAlign = 'left';
     display = 'block';
     borderRadius = '5px';
-    lineHeight = '16px';
+    lineHeight = 'normal';
     webkitFontSmoothing = 'auto';
   }
   document.body.appendChild(this.div);
