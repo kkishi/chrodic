@@ -57,7 +57,8 @@ var words = [];
 
 function addWord(key, value, last) {
   var lowerKey = key.toLowerCase();
-  var entry = { "key": lowerKey, "value": value };
+  var valueWithoutRuby = value.replace(/｛.+?｝/g, '');
+  var entry = { "key": lowerKey, "value": valueWithoutRuby };
   if (key != lowerKey) {
     entry.originalKey = key;
   }
