@@ -45,6 +45,7 @@ TranslationTask.prototype.translate = function(i) {
         ++self.finished;
         if (self.finished == self.words.length) {
           TranslationTask.activeTask = null;
+          if (!self.translationBox.Enabled()) return;
           self.translationBox.SetContent(self.results);
           self.translationBox.AdjustLocation();
           self.translationBox.Fadein();

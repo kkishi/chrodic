@@ -1,6 +1,7 @@
 function TranslationBox() {
   this.div = document.createElement('div');
   this.opacity = 0;
+  this.enabled = false;
   with (this.div.style) {
     zIndex = 2147483647;
     position = 'absolute';
@@ -17,6 +18,14 @@ function TranslationBox() {
   }
   document.body.appendChild(this.div);
 }
+
+TranslationBox.prototype.Enabled = function() {
+  return this.enabled;
+};
+
+TranslationBox.prototype.SetEnabled = function(enabled) {
+  this.enabled = enabled;
+};
 
 TranslationBox.prototype.Fadein = function() {
   var self = this;

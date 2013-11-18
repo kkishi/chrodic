@@ -1,6 +1,5 @@
 console.log('chrodic loaded!');
 
-var enabled = false;
 var mouseMoveEvent;
 
 function getWord(n) {
@@ -114,7 +113,7 @@ function redrawTranslationBox() {
 var lastScrollTimeStamp = 0;
 
 document.addEventListener('scroll', function(event) {
-  if (!enabled) return;
+  if (!translationBox.Enabled()) return;
 
   // Clear translation box.
   translationBox.Fadeout();
@@ -134,7 +133,7 @@ document.addEventListener('mousemove', function(event) {
 
   translationBox.SetLocation(mouseMoveEvent);
 
-  if (!enabled) return;
+  if (!translationBox.Enabled()) return;
 
   if (previousWord == getWord(1)) return;
 
@@ -156,7 +155,7 @@ document.addEventListener('mousemove', function(event) {
 }, false);
 
 document.addEventListener('mouseleave', function(event) {
-  if (!enabled) return;
+  if (!translationBox.Enabled()) return;
 
   // Clear translation box.
   translationBox.Fadeout();
@@ -168,8 +167,8 @@ document.addEventListener('mouseleave', function(event) {
 var enableTimeout;
 
 document.addEventListener('mousedown', function(event) {
-  if (enabled) {
-    enabled = false;
+  if (translationBox.Enabled()) {
+    translationBox.SetEnabled(false);
     translationBox.Fadeout();
   } else {
     enableTimeout = setTimeout(function() {
@@ -178,7 +177,7 @@ document.addEventListener('mousedown', function(event) {
         // Only triggers when mouse stays on the same location.
         return;
       }
-      enabled = true;
+      translationBox.SetEnabled(true);
       redrawTranslationBox();
     }, 500);
   }
