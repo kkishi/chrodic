@@ -49,8 +49,6 @@ function openDatabase(callback) {
 
     var store = db.createObjectStore("word", {autoIncrement: true});
     store.createIndex('key', 'key', {unique: false});
-
-    callback();
   };
 
   request.onsuccess = function(e) {
@@ -87,7 +85,8 @@ function addWord(key, value, last) {
     return;
   }
 
-  log(JSON.stringify(words[0]));
+  var firstWord = JSON.stringify(words[0]);
+  log(firstWord);
 
   var trans = db.transaction(["word"], "readwrite");
   var store = trans.objectStore("word");
@@ -97,7 +96,7 @@ function addWord(key, value, last) {
   }
 
   trans.oncomplete = function(e) {
-    log("transaction complete", JSON.stringify(words[0]));
+    log("transaction complete", firstWord);
     if (last) {
       // Notify background.js that it can re-open db.
       chrome.runtime.sendMessage(
