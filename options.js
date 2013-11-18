@@ -103,10 +103,12 @@ function processKeyValue(kv) {
       addWord(key, value, false);
     }
     key = kv.key;
-    value = (kv.kind ? kv.kind + kv.value : kv.value);
+    value = '';
   } else {
-    value += "\n" + (kv.kind ? kv.kind + kv.value : kv.value);
+    value += '\n';
   }
+  if (kv.kind) value += '【' + kv.kind + '】';
+  value += kv.value;
 }
 
 function loadFile(file) {
