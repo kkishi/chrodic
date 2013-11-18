@@ -89,8 +89,11 @@ var REWRITE_RULES = [
 })();
 
 var translationBox = new TranslationBox;
+var previousWord = '';
 
 function redrawTranslationBox() {
+  previousWord = getWord(1);
+
   var words = [];
   for (var i = 5; i >= 1; --i) {
     var w = getWord(i);
@@ -122,8 +125,6 @@ document.addEventListener('scroll', function(event) {
 
 var st;
 
-var previousWord = '';
-
 document.addEventListener('mousemove', function(event) {
   // Store event to obtain mouse location.
   mouseMoveEvent = event;
@@ -135,9 +136,7 @@ document.addEventListener('mousemove', function(event) {
 
   if (!enabled) return;
 
-  var word = getWord(1);
-  if (word == previousWord) return;
-  previousWord = word;
+  if (previousWord == getWord(1)) return;
 
   // Clear translation box.
   translationBox.Fadeout();
