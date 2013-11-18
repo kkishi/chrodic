@@ -1,33 +1,46 @@
 var db;
 
-function deleteDatabase() {
-    var request = indexedDB.deleteDatabase("dict");
-    console.log('deleteDatabase', request);
-
-    request.onsuccess = function(e) {
-      console.log('delete success');
-    };
-
-    request.onerror = function(e) {
-      console.log('delete error', e);
-    };
-
-    request.onblocked = function(e) {
-      console.log('delete blocked', e);
-    };
+function log() {
+  console.log.apply(console, arguments);
+  var textarea = document.getElementById('log');
+  textarea.value += Array.prototype.join.call(arguments, ' ') + '\n';
+  textarea.scrollTop = textarea.scrollHeight;
 }
 
-function openDatabase() {
-  var request = indexedDB.open("dict", 1);
-  console.log('openDatabase', request);
+function deleteDatabase(callback) {
+  var request = indexedDB.deleteDatabase("dict");
+  log('deleteDatabase', request);
 
   request.onupgradeneeded = function(e) {
-    console.log('open upgradeneeded');
+    log('delete upgradeneeded');
+    callback();
+  };
+
+  request.onsuccess = function(e) {
+    log('delete success');
+    callback();
+  };
+
+  request.onerror = function(e) {
+    log('delete error', e);
+  };
+
+  request.onblocked = function(e) {
+    log('delete blocked', e);
+  };
+}
+
+function openDatabase(callback) {
+  var request = indexedDB.open("dict", 1);
+  log('openDatabase', request);
+
+  request.onupgradeneeded = function(e) {
+    log('open upgradeneeded');
 
     db = e.target.result;
 
     e.target.transaction.onerror = function(e) {
-      console.log('transaction error', e);
+      log('transaction error', e);
     };
 
     if(db.objectStoreNames.contains("word")) {
@@ -36,20 +49,24 @@ function openDatabase() {
 
     var store = db.createObjectStore("word", {autoIncrement: true});
     store.createIndex('key', 'key', {unique: false});
+
+    callback();
   };
 
   request.onsuccess = function(e) {
-    console.log('open success');
+    log('open success');
 
     db = e.target.result;
+
+    callback();
   };
 
   request.onerror = function(e) {
-    console.log('open error', e);
+    log('open error', e);
   };
 
   request.onblocked = function(e) {
-    console.log('open blocked', e);
+    log('open blocked', e);
   };
 };
 
@@ -70,7 +87,7 @@ function addWord(key, value, last) {
     return;
   }
 
-  console.log(words[0]);
+  log(JSON.stringify(words[0]));
 
   var trans = db.transaction(["word"], "readwrite");
   var store = trans.objectStore("word");
@@ -80,13 +97,13 @@ function addWord(key, value, last) {
   }
 
   trans.oncomplete = function(e) {
-    console.log("transaction complete");
+    log("transaction complete", JSON.stringify(words[0]));
     if (last) {
       // Notify background.js that it can re-open db.
       chrome.runtime.sendMessage(
         {'action' : 'endDatabaseUpdate'},
         function () {
-          console.log('Done!');
+          log('Done!');
         });
     }
   };
@@ -116,7 +133,7 @@ function loadFile(file) {
   function parseLine(line) {
     var m =line.match(/■([^{]+)(?:  {(.+)})? : (.+)/);
     if (m == null) {
-      console.log('Failed to parse line: ', line);
+      log('Failed to parse line: ', line);
       return;
     }
     processKeyValue({ key: m[1], kind: m[2], value: m[3] });
@@ -164,7 +181,7 @@ function loadFile(file) {
   var current = 0;
   function readLoop() {
     var percentage = Math.round(current / file.size * 100);
-    console.log(current + " / " + file.size + " (" + percentage + "%)");
+    log(current + " / " + file.size + " (" + percentage + "%)");
     updateProgressBar(percentage);
 
     var reader = new FileReader();
@@ -182,23 +199,18 @@ document.querySelector('#myfile').onchange = function(e) {
 
   // First, notify background.js that we are going to manipulate db so it
   // should close currently opened db.
+  log('Notifying the background page about DB installation.');
   chrome.runtime.sendMessage(
     {'action' : 'beginDatabaseUpdate'},
     function () {
       // Now we can manipulate db. Recreate a new db.
-      deleteDatabase();
-      openDatabase();
-
-      // Poll until db becomes available.
-      var st = setInterval(function() {
-        if (db == null) {
-          console.log('DB not initialized.');
-          return;
-        }
-        console.log('DB initialized.');
-        clearInterval(st);
-        loadFile(file);
-      }, 1000);
+      log('Controll is back from background page.');
+      deleteDatabase(function() {
+        openDatabase(function() {
+          log('DB initialization successfully finished.');
+          loadFile(file);
+        });
+      });
     });
 };
 
