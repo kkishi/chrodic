@@ -143,4 +143,17 @@ window.addEventListener('load', function() {
     delete localStorage['numEntries'];
     renderEntries();
   });
+
+  var str = localStorage['numEntries'];
+  var numEntries = (str == undefined) ? 0 : parseInt(str);
+  var text = '';
+  for (var i = 0; i < numEntries; ++i) {
+    var entryStr = localStorage['entry[' + i + ']'];
+    var entry = JSON.parse(entryStr);
+    text += entry.word + '	' + entry.translation.replace(/\n/g, '<br />') +
+      '\n';
+  }
+  var blob = new Blob([text]);
+  var link = window.URL.createObjectURL(blob);
+  document.getElementById('download').href = link;
 });
