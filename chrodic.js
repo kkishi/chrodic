@@ -195,5 +195,5 @@ document.addEventListener('keydown', function(event) {
   if (kc - 49 >= content.length) return;
   chrome.runtime.sendMessage(
     {action: 'addToAnki', entry: content[kc - 49]},
-    function() { console.log('Added to Anki.'); });
+    function(result) { console.log('Added to ' + result + '.'); });
 });
