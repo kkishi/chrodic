@@ -43,13 +43,14 @@ function addToAnki(entry, inCallback) {
     // Cancel adding to Anki if it took more than 10 seconds. In that case add
     // to localStorage instead.
     var cancelled = false;
-    setTimeout(function() {
+    var st = setTimeout(function() {
       cancelled = true;
       addToLocalStorage(entry, callback);
     }, 10000);
 
     chrome.tabs.executeScript(tab.id, {file: 'ankiweb.js'}, function(result) {
       if (cancelled) return;
+      clearTimeout(st);
 
       // If executeScript was successfully performed, result should be an array
       // containing a string 'success'.
