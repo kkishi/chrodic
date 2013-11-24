@@ -30,6 +30,11 @@ function addToLocalStorage(entry, callback) {
 }
 
 function addToAnki(entry, inCallback) {
+  if (localStorage['use_anki'] == undefined) {
+    addToLocalStorage(entry, inCallback);
+    return;
+  }
+
   var ankiweb = 'http://ankiweb.net/edit/';
   var message = {entry: entry,
                  config: {noteType: localStorage['note_type'],
