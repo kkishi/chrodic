@@ -4,12 +4,15 @@
       body {
         font-family: 'Lucida Grande', sans-serif;
         font-size: 75%;
+        -webkit-margin-start: 24px;
+        -webkit-margin-end: 24px;
       }
       h3 {
         font-size: 1.2em;
         margin-bottom: 0.8em;
         font-weight: normal;
         line-height: 1;
+        -webkit-margin-start: -18px;
       }
       .row {
         display: block;
@@ -30,7 +33,7 @@
     <section>
       <h3>Anki</h3>
       <div style="-webkit-box-flex:1;">
-        <span class="row">Use Ankiweb to save words:<input type="checkbox" id="use_anki" /></span>
+        <span class="row">Use Ankiweb to save words (you need to be logged in to <a href="https://ankiweb.net/" target="_blank">Ankiweb</a>):<input type="checkbox" id="use_anki" /></span>
         <span class="row">Note type:<input type="text" id="note_type" /></span>
         <span class="row">Deck:<input type="text" id="deck" /></span>
       </div>
