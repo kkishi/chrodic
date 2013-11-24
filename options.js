@@ -92,32 +92,50 @@ document.querySelector('#eijiro_file').onchange = function(e) {
 
 var fields = [{name: 'note_type', default: 'Basic'},
               {name: 'deck', default: 'Default'}];
-window.addEventListener('load', function() {
+
+function updateElements() {
   var useAnki = (localStorage['use_anki'] != undefined);
+  document.getElementById('use_anki').checked = useAnki;
 
-  var element = document.getElementById('use_anki');
-  if (useAnki) element.checked = true;
-  element.addEventListener('change', function(e) {
-    if (element.checked) {
-      localStorage['use_anki'] = true;
-    } else {
-      delete localStorage['use_anki'];
-    }
-    fields.forEach(function(field) {
-      document.getElementById(field.name).disabled = !element.checked;
-    });
+  fields.forEach(function(field) {
+    var element = document.getElementById(field.name);
+    element.value = localStorage[field.name];
+    element.disabled = !useAnki;
   });
+}
 
+function readValues() {
+  var element = document.getElementById('use_anki');
+  if (element.checked) {
+    localStorage['use_anki'] = true;
+  } else {
+    delete localStorage['use_anki'];
+  }
+  fields.forEach(function(field) {
+    localStorage[field.name] = document.getElementById(field.name).value;
+  });
+}
+
+function onChange() {
+  readValues();
+  updateElements();
+}
+
+window.addEventListener('load', function() {
+  // Set default values.
   fields.forEach(function(field) {
     if (localStorage[field.name] == undefined) {
       localStorage[field.name] = field.default;
     }
-    var element = document.getElementById(field.name);
-    element.value = localStorage[field.name];
-    element.addEventListener('change', function(e) {
-      localStorage[field.name] = element.value;
-    });
-    if (!useAnki) element.disabled = true;
+  });
+
+  // Initialize elements.
+  updateElements();
+
+  // Set event handlers.
+  document.getElementById('use_anki').addEventListener('change', onChange);
+  fields.forEach(function(field) {
+    document.getElementById(field.name).addEventListener('change', onChange);
   });
 });
 
