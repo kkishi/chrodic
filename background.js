@@ -35,7 +35,7 @@ function addToAnki(entry, inCallback) {
     return;
   }
 
-  var ankiweb = 'http://ankiweb.net/edit/';
+  var ankiweb = 'https://ankiweb.net/edit/';
   var message = {entry: entry,
                  config: {noteType: localStorage['note_type'],
                           deck: localStorage['deck']}};

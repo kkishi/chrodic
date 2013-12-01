@@ -3,9 +3,7 @@
   "version" : "0.2.6",
   "description" : "A mouseover dictionary implementation",
   "homepage_url" : "http://d.hatena.ne.jp/kkishi/",
-  "permissions" : [
-    "http://*/*", "https://*/*"
-  ],
+  "permissions" : [ "https://ankiweb.net/*" ],
   "content_scripts" : [
     {
       "matches" : [ "http://*/*", "https://*/*" ],
