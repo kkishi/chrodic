@@ -18,5 +18,6 @@
     "persistent": false
   },
   "options_page" : "options.html",
+  "icons" : { "128" : "icon128.png" },
   "manifest_version" : 2
 }
