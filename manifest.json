@@ -1,8 +1,7 @@
 {
-  "name" : "chrodic",
-  "version" : "0.3.0",
-  "description" : "A mouseover dictionary on Chrome.",
-  "homepage_url" : "http://d.hatena.ne.jp/kkishi/",
+  "name" : "Chrodic",
+  "version" : "0.3.1",
+  "description" : "A mouseover dictionary for Google Chrome™",
   "permissions" : [ "https://ankiweb.net/*" ],
   "content_scripts" : [
     {
