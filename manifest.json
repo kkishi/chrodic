@@ -1,6 +1,6 @@
 {
   "name" : "Chrodic",
-  "version" : "0.3.1",
+  "version" : "0.3.2",
   "description" : "A mouseover dictionary for Google Chrome™",
   "permissions" : [ "https://ankiweb.net/*" ],
   "content_scripts" : [

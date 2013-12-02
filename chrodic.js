@@ -188,6 +188,7 @@ document.addEventListener('mouseup', function(event) {
 });
 
 document.addEventListener('keydown', function(event) {
+  if (!translationBox.Enabled()) return;
   var kc = event.keyCode;
   // 49 == '1', 57 == '9'
   if (kc < 49 || 57 < kc) return;
