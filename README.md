@@ -1,4 +1,4 @@
-* About
+# About
 
 Chrodic is a Chrome Extension which provides a mouse over text translation
 functionality into your browser. Currently it supports translation from English
@@ -6,7 +6,7 @@ to Japanese based on the Eijiro dictionary. Because it imports an Eijiro
 dictionary file into an IndexedDB inside Chrome, it works fast and also works
 offline.
 
-* Install
+# Install
 
 1. Get an Eijiro dictionary file. You can either buy a book which comes with a
    CD containing a dictionary file, or buy a file online at
@@ -24,7 +24,7 @@ offline.
       EIJI-118-utf-8.TXT file you just created.
    1. Wait until "Done!" is shown on the textarea below.
 
-* Usage
+# Usage
 
 After the installation you can enable Chrodic on any page by keep pressing the
 left mouse button more than 500ms. Then Chrodic will start showing translation
