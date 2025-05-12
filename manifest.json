@@ -1,8 +1,8 @@
 {
   "name" : "Chrodic",
-  "version" : "0.3.2",
+  "version" : "0.3.3",
   "description" : "A mouseover dictionary for Google Chrome™",
-  "permissions" : [ "https://ankiweb.net/*" ],
+  "optional_host_permissions": [ "https://ankiweb.net/*" ],
   "content_scripts" : [
     {
       "matches" : [ "http://*/*", "https://*/*" ],
@@ -10,11 +10,8 @@
       "all_frames" : true
     }
   ],
-  "background" : {
-    "scripts": ["background.js"],
-    "persistent": false
-  },
+  "background" : { "service_worker": "background.js" },
   "options_page" : "options.html",
   "icons" : { "128" : "icon128.png" },
-  "manifest_version" : 2
+  "manifest_version" : 3
 }

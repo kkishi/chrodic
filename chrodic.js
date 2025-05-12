@@ -1,4 +1,4 @@
-console.log('chrodic loaded!');
+console.log('chrodic loaded on ' + window.location + '!');
 
 var mouseMoveEvent;
 
